@@ -190,7 +190,8 @@ const GROUP_COLORS = {
   infra:        '#94a3b8',
   data:         '#22d3ee',
   web:          '#f472b6',
-  geo:          '#a3e635'
+  geo:          '#a3e635',
+  input:        '#fb923c'
 };
 
 const GROUP_LABELS = {
@@ -202,7 +203,8 @@ const GROUP_LABELS = {
   infra:        'Infrastructure',
   data:         'Data / Weather',
   web:          'Web',
-  geo:          'Geo / Maps'
+  geo:          'Geo / Maps',
+  input:        'Physical Inputs'
 };
 
 const STATUS_COLORS = {
@@ -417,7 +419,7 @@ function render(data) {
 
   // Legend — only show groups that appear in data
   const presentGroups = [...new Set(data.nodes.map(n => n.group))];
-  const groupOrder = ['mine','ai','home_svc','communication','productivity','infra','data','web','geo'];
+  const groupOrder = ['mine','input','ai','home_svc','communication','productivity','infra','data','web','geo'];
   const legendEl = document.getElementById('legend');
   groupOrder.filter(g => presentGroups.includes(g)).forEach(g => {
     const item = document.createElement('div');

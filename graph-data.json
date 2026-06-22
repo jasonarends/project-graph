@@ -74,6 +74,35 @@
       "version": "v0.6.6"
     },
     {
+      "id": "dogs_site",
+      "label": "dogs.orionis.site",
+      "group": "mine",
+      "description": "FastAPI web app tracking dog outings by household member. NFC/QR tap → identity picker (remembered by cookie) → logs outing to SQLite → fires HA webhook. Dashboard shows last-out times, overdue alerts, 14-day heatmap, and per-person counts for Goomba, Ace, and Freyja.",
+      "tech": ["Python", "FastAPI", "SQLite", "Jinja2", "Docker"],
+      "github": "https://github.com/jasonarends/home-assistant-automations",
+      "status": "active",
+      "url": "https://dogs.orionis.site"
+    },
+    {
+      "id": "chores_site",
+      "label": "chores.orionis.site",
+      "group": "mine",
+      "description": "FastAPI web app for completing household chores via NFC/QR tag. Tap → identity picker → calls Donetick API to mark complete → fires HA webhook. Dashboard shows due dates, a points leaderboard, and recent completions. /tags page generates printable QR codes for every chore.",
+      "tech": ["Python", "FastAPI", "SQLite", "Jinja2", "Docker"],
+      "github": "https://github.com/jasonarends/home-assistant-automations",
+      "status": "active",
+      "url": "https://chores.orionis.site"
+    },
+    {
+      "id": "nfc_qr",
+      "label": "NFC / QR Tags",
+      "group": "input",
+      "description": "Physical NFC stickers and printed QR codes placed around the house — on dog leash hooks, appliances, etc. Any household member taps or scans to log an action. No app needed; identity is remembered via cookie after first use. The same actions can also be triggered via Clarence or the web dashboard.",
+      "tech": [],
+      "github": null,
+      "status": "active"
+    },
+    {
       "id": "bike_walk_joplin",
       "label": "Bike Walk Joplin",
       "group": "mine",
@@ -229,6 +258,15 @@
     { "source": "fb_specials",         "target": "portainer",        "label": "deployed on" },
 
     { "source": "bike_walk_joplin",    "target": "supabase",         "label": "reports + photo upload" },
-    { "source": "bike_walk_joplin",    "target": "arcgis",           "label": "GIS layers + crash data" }
+    { "source": "bike_walk_joplin",    "target": "arcgis",           "label": "GIS layers + crash data" },
+
+    { "source": "nfc_qr",             "target": "dogs_site",        "label": "tap/scan → log outing" },
+    { "source": "nfc_qr",             "target": "chores_site",      "label": "tap/scan → complete chore" },
+    { "source": "dogs_site",          "target": "home_assistant",   "label": "outing webhook" },
+    { "source": "chores_site",        "target": "donetick_service", "label": "mark chore complete" },
+    { "source": "chores_site",        "target": "home_assistant",   "label": "completion webhook" },
+    { "source": "clarence_bot",       "target": "dogs_site",        "label": "dogs REST API" },
+    { "source": "ha_automations",     "target": "dogs_site",        "label": "parent project / deploys" },
+    { "source": "ha_automations",     "target": "chores_site",      "label": "parent project / deploys" }
   ]
 }
