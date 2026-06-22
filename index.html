@@ -229,9 +229,11 @@ function render(data) {
   let W = container.clientWidth;
   let H = container.clientHeight;
 
-  // Build adjacency sets (before D3 mutates link objects)
+  // Build adjacency sets and degree map (before D3 mutates link objects)
   const neighborSet = new Set();
   const linkOf = {}; // nodeId → [links]
+  const degree = {};
+  data.nodes.forEach(n => { degree[n.id] = 0; });
   data.links.forEach(l => {
     neighborSet.add(`${l.source}|${l.target}`);
     neighborSet.add(`${l.target}|${l.source}`);
@@ -239,6 +241,8 @@ function render(data) {
     if (!linkOf[l.target]) linkOf[l.target] = [];
     linkOf[l.source].push(l);
     linkOf[l.target].push(l);
+    degree[l.source] = (degree[l.source] || 0) + 1;
+    degree[l.target] = (degree[l.target] || 0) + 1;
   });
 
   function areNeighbors(a, b) {
@@ -283,7 +287,8 @@ function render(data) {
       .strength(0.4))
     .force('charge', d3.forceManyBody()
       .strength(d => d.group === 'mine' ? -600 : -220))
-    .force('center', d3.forceCenter(W / 2, H / 2).strength(0.05))
+    .force('x', d3.forceX(W / 2).strength(d => degree[d.id] <= 2 ? 0.12 : 0.03))
+    .force('y', d3.forceY(H / 2).strength(d => degree[d.id] <= 2 ? 0.12 : 0.03))
     .force('collide', d3.forceCollide().radius(d => nodeR(d) + 16).strength(0.8))
     .alphaDecay(0.025);
 
@@ -432,7 +437,8 @@ function render(data) {
   window.addEventListener('resize', () => {
     W = container.clientWidth;
     H = container.clientHeight;
-    sim.force('center', d3.forceCenter(W / 2, H / 2).strength(0.05));
+    sim.force('x', d3.forceX(W / 2).strength(d => degree[d.id] <= 2 ? 0.12 : 0.03));
+    sim.force('y', d3.forceY(H / 2).strength(d => degree[d.id] <= 2 ? 0.12 : 0.03));
     sim.alpha(0.1).restart();
   });
 }
