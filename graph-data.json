@@ -1,0 +1,234 @@
+{
+  "meta": {
+    "title": "Jason's Project Ecosystem",
+    "description": "Force-directed map of active projects and integrations",
+    "updated": "2026-06-22"
+  },
+  "nodes": [
+    {
+      "id": "clarence_bot",
+      "label": "Clarence Bot",
+      "group": "mine",
+      "description": "Home AI assistant for the Arends household. Listens on Discord, responds to HA voice pipeline, delivers scheduled morning briefings, and controls smart home devices. Built on Claude Sonnet via the Agent SDK.",
+      "tech": ["Python", "FastAPI", "Claude SDK", "Discord.py", "APScheduler", "Docker"],
+      "github": "https://github.com/jasonarends/clarence_bot",
+      "status": "active",
+      "version": "v0.16.0"
+    },
+    {
+      "id": "discord_bot_project",
+      "label": "WeatherBot",
+      "group": "mine",
+      "description": "AI weather alerting bot monitoring NWS alerts, SPC outlooks, and the home Ambient Weather station. Posts rich embeds to Discord and exposes an MCP server used by Clarence and Home Assistant.",
+      "tech": ["Python", "LangGraph", "FastAPI", "Discord.py", "SQLite", "Docker"],
+      "github": "https://github.com/jasonarends/discord_bot_project",
+      "status": "active",
+      "version": "v1.16.6"
+    },
+    {
+      "id": "ha_automations",
+      "label": "HA Automations",
+      "group": "mine",
+      "description": "Umbrella repo of Home Assistant automations and companion microservices: NFC-triggered dog-out tracking, chore completion, garage alerts, home/away/vacation mode, and Clarence-triggered morning routines.",
+      "tech": ["Home Assistant YAML", "Python", "FastAPI", "Jinja2", "Docker"],
+      "github": "https://github.com/jasonarends/home-assistant-automations",
+      "status": "active"
+    },
+    {
+      "id": "ha_haiku_notify",
+      "label": "Haiku Notify",
+      "group": "mine",
+      "description": "HACS custom HA integration that wraps any notify service. Rephrases repeated/chained reminders via Claude so they vary in wording and don't sound robotic.",
+      "tech": ["Python", "Home Assistant", "HACS"],
+      "github": "https://github.com/jasonarends/ha-haiku-notify",
+      "status": "active",
+      "version": "v0.3.1"
+    },
+    {
+      "id": "donetick",
+      "label": "Donetick Scripts",
+      "group": "mine",
+      "description": "Python scripts and tooling to bulk-manage household chores and pet-care tasks in a self-hosted Donetick instance via its REST API. Tracks dogs-out, laundry, dishes, and other recurring tasks.",
+      "tech": ["Python"],
+      "github": null,
+      "status": "active"
+    },
+    {
+      "id": "mcp_portainer",
+      "label": "MCP Portainer",
+      "group": "mine",
+      "description": "MCP server that gives any AI assistant (Claude, Cursor, VS Code, etc.) full control over a Portainer instance — containers, stacks, images, networks, and volumes.",
+      "tech": ["Python", "FastMCP", "httpx", "pydantic-settings"],
+      "github": "https://github.com/jasonarends/mcp-portainer",
+      "status": "beta",
+      "version": "v0.1.0"
+    },
+    {
+      "id": "fb_specials",
+      "label": "FB Specials Scraper",
+      "group": "mine",
+      "description": "Scrapes Joplin restaurant Facebook pages for daily food specials using Playwright headless Chromium. Classifies the best post with Claude and surfaces results via a local web dashboard and Discord webhook.",
+      "tech": ["Python", "Playwright", "FastAPI", "SQLite", "nginx", "Docker"],
+      "github": "https://github.com/jasonarends/fb-specials-scraper",
+      "status": "active",
+      "version": "v0.6.6"
+    },
+    {
+      "id": "bike_walk_joplin",
+      "label": "Bike Walk Joplin",
+      "group": "mine",
+      "description": "Community-powered interactive bike and pedestrian safety map for Joplin, MO. Displays city infrastructure, lets residents report hazards with photo upload, and includes a 10-year MSHP crash analysis dashboard.",
+      "tech": ["HTML", "JavaScript", "Leaflet.js", "Python", "GeoJSON", "GitHub Pages"],
+      "github": "https://github.com/jasonarends/bike-walk-joplin-map",
+      "status": "active"
+    },
+    {
+      "id": "discord",
+      "label": "Discord",
+      "group": "communication",
+      "description": "Primary notification and chat interface for the home automation ecosystem. Clarence listens here; WeatherBot, HA, and FB Specials all post alerts to Discord channels.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "home_assistant",
+      "label": "Home Assistant",
+      "group": "home_svc",
+      "description": "Local home automation hub running at lvm-ha.orionis.site. Voice pipeline, entity/device control, automation trigger gateway, and host for the Haiku Notify integration.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "claude_api",
+      "label": "Claude API",
+      "group": "ai",
+      "description": "Anthropic's Claude API (Sonnet 4.6 for reasoning, Haiku 4.5 for fast/cheap tasks). Powers Clarence, WeatherBot, Haiku Notify, FB Specials, and MCP Portainer clients.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "trello",
+      "label": "Trello",
+      "group": "productivity",
+      "description": "Task board. Clarence reads the board as part of the morning brief via its Trello MCP integration.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "google_calendar",
+      "label": "Google Calendar",
+      "group": "productivity",
+      "description": "Family calendar. Clarence fetches upcoming events as part of morning briefings via service-account integration.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "donetick_service",
+      "label": "Donetick",
+      "group": "home_svc",
+      "description": "Self-hosted chore and pet-care task tracker running at 10.10.200.75:2021 (Docker on qotom-2). REST API consumed by Clarence, HA Automations, and the Donetick Scripts.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "portainer",
+      "label": "Portainer",
+      "group": "infra",
+      "description": "Docker management platform running most project containers. Clarence, WeatherBot, and FB Specials deploy here via GitOps. MCP Portainer exposes it to AI clients.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "nws",
+      "label": "NWS / SPC",
+      "group": "data",
+      "description": "National Weather Service and Storm Prediction Center APIs. Primary weather alert and forecast data source for WeatherBot.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "ambient_weather",
+      "label": "Ambient Weather",
+      "group": "data",
+      "description": "Home weather station. WeatherBot pulls local conditions (temp, humidity, wind, rain) via the aioambient library.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "facebook",
+      "label": "Facebook",
+      "group": "web",
+      "description": "FB Specials Scraper hits public restaurant /posts pages via Playwright headless Chromium — no API key, bypasses login overlay.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "supabase",
+      "label": "Supabase",
+      "group": "data",
+      "description": "Cloud storage and Postgres database for Bike Walk Joplin community hazard reports and photo uploads.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    },
+    {
+      "id": "arcgis",
+      "label": "ArcGIS / GIS",
+      "group": "geo",
+      "description": "ArcGIS REST APIs (JATSO, Joplin GIS, NCES, MSHP) providing bike lanes, school locations, and 10-year crash data for the Bike Walk Joplin safety map.",
+      "tech": [],
+      "github": null,
+      "status": "external"
+    }
+  ],
+  "links": [
+    { "source": "clarence_bot",        "target": "discord",          "label": "chat interface" },
+    { "source": "clarence_bot",        "target": "home_assistant",   "label": "entity control via MCP" },
+    { "source": "clarence_bot",        "target": "discord_bot_project", "label": "weather data via MCP" },
+    { "source": "clarence_bot",        "target": "claude_api",       "label": "LLM (Sonnet 4.6)" },
+    { "source": "clarence_bot",        "target": "trello",           "label": "board access" },
+    { "source": "clarence_bot",        "target": "google_calendar",  "label": "calendar" },
+    { "source": "clarence_bot",        "target": "donetick_service", "label": "chore tasks" },
+    { "source": "clarence_bot",        "target": "portainer",        "label": "deployed via GitOps" },
+
+    { "source": "discord_bot_project", "target": "discord",          "label": "alerts + bot responses" },
+    { "source": "discord_bot_project", "target": "nws",              "label": "weather alerts + forecast" },
+    { "source": "discord_bot_project", "target": "ambient_weather",  "label": "home station data" },
+    { "source": "discord_bot_project", "target": "claude_api",       "label": "AI processing" },
+    { "source": "discord_bot_project", "target": "home_assistant",   "label": "exposes MCP server" },
+    { "source": "discord_bot_project", "target": "portainer",        "label": "deployed on" },
+
+    { "source": "ha_automations",      "target": "home_assistant",   "label": "deploys automations" },
+    { "source": "ha_automations",      "target": "clarence_bot",     "label": "trigger endpoint" },
+    { "source": "ha_automations",      "target": "ha_haiku_notify",  "label": "notification routing" },
+    { "source": "ha_automations",      "target": "donetick_service", "label": "chore completion" },
+    { "source": "ha_automations",      "target": "discord",          "label": "notifications" },
+
+    { "source": "ha_haiku_notify",     "target": "home_assistant",   "label": "HACS integration" },
+    { "source": "ha_haiku_notify",     "target": "claude_api",       "label": "via HA ai_task" },
+
+    { "source": "donetick",            "target": "donetick_service", "label": "REST API scripting" },
+    { "source": "donetick",            "target": "portainer",        "label": "Docker management" },
+
+    { "source": "mcp_portainer",       "target": "portainer",        "label": "Portainer REST API" },
+    { "source": "mcp_portainer",       "target": "claude_api",       "label": "used by Claude clients" },
+
+    { "source": "fb_specials",         "target": "facebook",         "label": "Playwright scraping" },
+    { "source": "fb_specials",         "target": "claude_api",       "label": "post classification" },
+    { "source": "fb_specials",         "target": "discord",          "label": "webhook notifications" },
+    { "source": "fb_specials",         "target": "portainer",        "label": "deployed on" },
+
+    { "source": "bike_walk_joplin",    "target": "supabase",         "label": "reports + photo upload" },
+    { "source": "bike_walk_joplin",    "target": "arcgis",           "label": "GIS layers + crash data" }
+  ]
+}

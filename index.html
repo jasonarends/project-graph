@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jason's Project Ecosystem</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #21262d;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-shrink: 0;
+  background: #0d1117;
+  z-index: 10;
+}
+header h1 { font-size: 16px; font-weight: 600; color: #f0f6fc; letter-spacing: -0.2px; }
+header .subtitle { font-size: 12px; color: #484f58; }
+header .updated { font-size: 11px; color: #30363d; margin-left: auto; }
+
+#graph { flex: 1; position: relative; }
+
+svg { width: 100%; height: 100%; cursor: grab; }
+svg:active { cursor: grabbing; }
+
+/* Links */
+.link {
+  stroke: #21262d;
+  stroke-width: 1.5;
+  fill: none;
+  transition: stroke 0.15s, stroke-opacity 0.15s, stroke-width 0.15s;
+}
+.link.highlighted { stroke: #388bfd; stroke-width: 2.5; stroke-opacity: 1 !important; }
+.link.dimmed { stroke-opacity: 0.06; }
+
+/* Link labels (shown on link hover) */
+.link-label {
+  font-size: 10px;
+  fill: #8b949e;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.link-label.visible { opacity: 1; }
+
+/* Nodes */
+.node { cursor: pointer; }
+.node circle {
+  stroke-width: 2;
+  transition: r 0.2s ease, filter 0.2s ease;
+}
+.node.mine circle {
+  filter: drop-shadow(0 0 6px var(--node-color));
+}
+.node.has-github circle { stroke-dasharray: none; }
+.node.dimmed circle { opacity: 0.12; }
+.node.dimmed text { opacity: 0.08; }
+
+.node text {
+  pointer-events: none;
+  fill: #8b949e;
+  font-size: 10.5px;
+}
+.node.mine text {
+  fill: #c9d1d9;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Status dots */
+.status-dot { pointer-events: none; }
+
+/* Tooltip */
+#tooltip {
+  position: fixed;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 14px 16px;
+  width: 280px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  z-index: 200;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.03);
+}
+#tooltip.visible { opacity: 1; }
+
+.tt-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tt-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tt-name { font-weight: 600; font-size: 14px; color: #f0f6fc; }
+.tt-version { font-size: 10px; color: #484f58; margin-left: auto; }
+.tt-desc { font-size: 12px; color: #8b949e; line-height: 1.55; margin-bottom: 10px; }
+.tt-tech {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-bottom: 10px;
+}
+.tt-tech span {
+  background: #1c2128; border: 1px solid #30363d;
+  border-radius: 4px; padding: 1px 7px;
+  font-size: 10px; color: #6e7681;
+}
+.tt-connections { border-top: 1px solid #21262d; padding-top: 8px; }
+.tt-connections-label { font-size: 10px; color: #30363d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.tt-conn-item { font-size: 11px; color: #6e7681; margin: 3px 0; display: flex; gap: 6px; }
+.tt-conn-item .arrow { color: #388bfd; flex-shrink: 0; }
+.tt-conn-item .conn-name { color: #8b949e; font-weight: 500; }
+.tt-conn-item .conn-label { color: #484f58; }
+.tt-github {
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid #21262d;
+  font-size: 11px; color: #388bfd;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* Legend */
+#legend {
+  position: absolute;
+  bottom: 18px; left: 18px;
+  background: rgba(13,17,23,0.92);
+  border: 1px solid #21262d;
+  border-radius: 10px;
+  padding: 12px 14px;
+  backdrop-filter: blur(8px);
+  z-index: 50;
+}
+#legend h3 {
+  font-size: 10px; font-weight: 600; color: #30363d;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #6e7681;
+  padding: 2px 0;
+}
+.legend-swatch {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* Instructions */
+#hint {
+  position: absolute;
+  bottom: 18px; right: 18px;
+  font-size: 10px; color: #21262d;
+  text-align: right;
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Project Ecosystem</h1>
+  <span class="subtitle">Hover to explore · click nodes with GitHub links to open repo · drag to rearrange</span>
+  <span class="updated" id="updated-date"></span>
+</header>
+
+<div id="graph">
+  <svg id="svg"></svg>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="legend"><h3>Groups</h3></div>
+
+<div id="hint">scroll to zoom<br>drag to pan<br>drag nodes</div>
+
+<script>
+const GROUP_COLORS = {
+  mine:         '#3b82f6',
+  ai:           '#a78bfa',
+  home_svc:     '#f97316',
+  communication:'#34d399',
+  productivity: '#facc15',
+  infra:        '#94a3b8',
+  data:         '#22d3ee',
+  web:          '#f472b6',
+  geo:          '#a3e635'
+};
+
+const GROUP_LABELS = {
+  mine:         'My Projects',
+  ai:           'AI / Claude API',
+  home_svc:     'Home Services',
+  communication:'Communication',
+  productivity: 'Productivity',
+  infra:        'Infrastructure',
+  data:         'Data / Weather',
+  web:          'Web',
+  geo:          'Geo / Maps'
+};
+
+const STATUS_COLORS = {
+  active:   '#22c55e',
+  beta:     '#eab308',
+  external: 'transparent'
+};
+
+fetch('graph-data.json')
+  .then(r => r.json())
+  .then(render)
+  .catch(e => {
+    document.body.innerHTML += `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#f85149;font-size:14px;">Failed to load graph-data.json: ${e.message}</div>`;
+  });
+
+function render(data) {
+  // Show updated date
+  document.getElementById('updated-date').textContent = 'updated ' + data.meta.updated;
+
+  const svgEl = document.getElementById('svg');
+  const container = document.getElementById('graph');
+  let W = container.clientWidth;
+  let H = container.clientHeight;
+
+  // Build adjacency sets (before D3 mutates link objects)
+  const neighborSet = new Set();
+  const linkOf = {}; // nodeId → [links]
+  data.links.forEach(l => {
+    neighborSet.add(`${l.source}|${l.target}`);
+    neighborSet.add(`${l.target}|${l.source}`);
+    if (!linkOf[l.source]) linkOf[l.source] = [];
+    if (!linkOf[l.target]) linkOf[l.target] = [];
+    linkOf[l.source].push(l);
+    linkOf[l.target].push(l);
+  });
+
+  function areNeighbors(a, b) {
+    return a.id === b.id || neighborSet.has(`${a.id}|${b.id}`);
+  }
+
+  function nodeR(d) {
+    return d.group === 'mine' ? 21 : 13;
+  }
+
+  const svg = d3.select('#svg');
+  const defs = svg.append('defs');
+
+  // Subtle radial gradient for mine nodes
+  Object.entries(GROUP_COLORS).forEach(([g, c]) => {
+    const rg = defs.append('radialGradient')
+      .attr('id', `grad-${g}`)
+      .attr('cx', '35%').attr('cy', '35%').attr('r', '65%');
+    rg.append('stop').attr('offset', '0%').attr('stop-color', d3.color(c).brighter(0.6));
+    rg.append('stop').attr('offset', '100%').attr('stop-color', c);
+  });
+
+  // Zoom
+  const zoom = d3.zoom()
+    .scaleExtent([0.2, 5])
+    .on('zoom', e => g.attr('transform', e.transform));
+  svg.call(zoom);
+
+  const g = svg.append('g');
+
+  // Simulation
+  const sim = d3.forceSimulation(data.nodes)
+    .force('link', d3.forceLink(data.links)
+      .id(d => d.id)
+      .distance(d => {
+        const sm = d.source.group === 'mine';
+        const tm = d.target.group === 'mine';
+        if (sm && tm) return 180;
+        if (sm || tm) return 130;
+        return 70;
+      })
+      .strength(0.4))
+    .force('charge', d3.forceManyBody()
+      .strength(d => d.group === 'mine' ? -600 : -220))
+    .force('center', d3.forceCenter(W / 2, H / 2).strength(0.05))
+    .force('collide', d3.forceCollide().radius(d => nodeR(d) + 16).strength(0.8))
+    .alphaDecay(0.025);
+
+  // Links layer
+  const linkGroup = g.append('g').attr('class', 'links');
+  const linkSel = linkGroup.selectAll('line')
+    .data(data.links)
+    .join('line')
+    .attr('class', 'link');
+
+  // Link label layer (hidden by default, shown on node hover)
+  const linkLabelGroup = g.append('g').attr('class', 'link-labels');
+  const linkLabelSel = linkLabelGroup.selectAll('text')
+    .data(data.links)
+    .join('text')
+    .attr('class', 'link-label')
+    .attr('text-anchor', 'middle')
+    .text(d => d.label);
+
+  // Nodes layer
+  const nodeGroup = g.append('g').attr('class', 'nodes');
+  const nodeSel = nodeGroup.selectAll('g')
+    .data(data.nodes)
+    .join('g')
+    .attr('class', d => `node ${d.group === 'mine' ? 'mine' : ''} ${d.github ? 'has-github' : ''}`)
+    .style('--node-color', d => GROUP_COLORS[d.group] || '#666')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+  nodeSel.append('circle')
+    .attr('r', nodeR)
+    .attr('fill', d => `url(#grad-${d.group})`)
+    .attr('stroke', d => GROUP_COLORS[d.group] || '#555')
+    .attr('stroke-opacity', d => d.group === 'mine' ? 0.7 : 0.35);
+
+  // Status dots for "mine" nodes
+  nodeSel.filter(d => d.group === 'mine')
+    .append('circle')
+    .attr('class', 'status-dot')
+    .attr('r', 4)
+    .attr('cx', d => nodeR(d) - 4)
+    .attr('cy', d => -nodeR(d) + 4)
+    .attr('fill', d => STATUS_COLORS[d.status] || '#555')
+    .attr('stroke', '#0d1117')
+    .attr('stroke-width', 1.5);
+
+  // Labels
+  nodeSel.append('text')
+    .attr('dy', d => nodeR(d) + 14)
+    .attr('text-anchor', 'middle')
+    .text(d => d.label);
+
+  // Tooltip
+  const tooltip = document.getElementById('tooltip');
+
+  nodeSel
+    .on('mouseover', function(event, d) {
+      // Dim / highlight
+      nodeSel.classed('dimmed', n => !areNeighbors(d, n));
+      linkSel
+        .classed('dimmed', l => l.source.id !== d.id && l.target.id !== d.id)
+        .classed('highlighted', l => l.source.id === d.id || l.target.id === d.id);
+      linkLabelSel.classed('visible', l => l.source.id === d.id || l.target.id === d.id);
+
+      // Build connections list
+      const myLinks = data.links.filter(l => l.source.id === d.id || l.target.id === d.id);
+      const connHtml = myLinks.map(l => {
+        const other = l.source.id === d.id ? l.target : l.source;
+        const dir = l.source.id === d.id ? '→' : '←';
+        return `<div class="tt-conn-item"><span class="arrow">${dir}</span><span class="conn-name">${other.label}</span><span class="conn-label">${l.label}</span></div>`;
+      }).join('');
+
+      const techHtml = d.tech && d.tech.length
+        ? `<div class="tt-tech">${d.tech.map(t => `<span>${t}</span>`).join('')}</div>`
+        : '';
+
+      const githubHtml = d.github
+        ? `<div class="tt-github"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> Open on GitHub</div>`
+        : '';
+
+      const connectionsSection = myLinks.length
+        ? `<div class="tt-connections"><div class="tt-connections-label">Connections (${myLinks.length})</div>${connHtml}</div>`
+        : '';
+
+      tooltip.innerHTML = `
+        <div class="tt-header">
+          <div class="tt-dot" style="background:${GROUP_COLORS[d.group] || '#666'}"></div>
+          <div class="tt-name">${d.label}</div>
+          ${d.version ? `<div class="tt-version">${d.version}</div>` : ''}
+        </div>
+        <div class="tt-desc">${d.description}</div>
+        ${techHtml}
+        ${connectionsSection}
+        ${githubHtml}
+      `;
+      tooltip.classList.add('visible');
+      positionTooltip(event);
+    })
+    .on('mousemove', positionTooltip)
+    .on('mouseout', function() {
+      nodeSel.classed('dimmed', false);
+      linkSel.classed('dimmed', false).classed('highlighted', false);
+      linkLabelSel.classed('visible', false);
+      tooltip.classList.remove('visible');
+    })
+    .on('click', function(event, d) {
+      if (d.github) window.open(d.github, '_blank');
+    });
+
+  function positionTooltip(event) {
+    const TW = 280, TH = 320;
+    const VW = window.innerWidth, VH = window.innerHeight;
+    const x = event.clientX + 18;
+    const y = event.clientY - 10;
+    tooltip.style.left = (x + TW > VW ? event.clientX - TW - 18 : x) + 'px';
+    tooltip.style.top  = (y + TH > VH ? VH - TH - 10 : Math.max(10, y)) + 'px';
+  }
+
+  // Tick
+  sim.on('tick', () => {
+    linkSel
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+
+    linkLabelSel
+      .attr('x', d => (d.source.x + d.target.x) / 2)
+      .attr('y', d => (d.source.y + d.target.y) / 2 - 4);
+
+    nodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  // Legend — only show groups that appear in data
+  const presentGroups = [...new Set(data.nodes.map(n => n.group))];
+  const groupOrder = ['mine','ai','home_svc','communication','productivity','infra','data','web','geo'];
+  const legendEl = document.getElementById('legend');
+  groupOrder.filter(g => presentGroups.includes(g)).forEach(g => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-swatch" style="background:${GROUP_COLORS[g]}"></div><span>${GROUP_LABELS[g]}</span>`;
+    legendEl.appendChild(item);
+  });
+
+  // Resize
+  window.addEventListener('resize', () => {
+    W = container.clientWidth;
+    H = container.clientHeight;
+    sim.force('center', d3.forceCenter(W / 2, H / 2).strength(0.05));
+    sim.alpha(0.1).restart();
+  });
+}
+</script>
+</body>
+</html>
